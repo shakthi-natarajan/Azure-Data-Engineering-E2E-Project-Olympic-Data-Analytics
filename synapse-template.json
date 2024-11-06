@@ -1,0 +1,401 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "servers_tokyo_olympics_sa1_name": {
+      "type": "String"
+    },
+    "vulnerabilityAssessments_Default_storageContainerPath": {
+      "type": "SecureString"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2023-08-01-preview",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "kind": "v12.0,analytics",
+      "location": "westus",
+      "name": "[parameters('servers_tokyo_olympics_sa1_name')]",
+      "properties": {
+        "administratorLogin": "sqladminuser",
+        "administrators": {
+          "administratorType": "ActiveDirectory",
+          "azureADOnlyAuthentication": false,
+          "login": "live.com#shakthinatrajan@gmail.com",
+          "principalType": "User",
+          "sid": "f4756aa1-1dc7-4216-9ddb-ef9e9cbdad35",
+          "tenantId": "c3a5d842-b82e-438b-965f-e92b8c3fc2a4"
+        },
+        "minimalTlsVersion": "1.2",
+        "publicNetworkAccess": "Enabled",
+        "restrictOutboundNetworkAccess": "Disabled",
+        "version": "12.0"
+      },
+      "type": "Microsoft.Sql/servers"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/ActiveDirectory')]",
+      "properties": {
+        "administratorType": "ActiveDirectory",
+        "login": "live.com#shakthinatrajan@gmail.com",
+        "sid": "f4756aa1-1dc7-4216-9ddb-ef9e9cbdad35",
+        "tenantId": "c3a5d842-b82e-438b-965f-e92b8c3fc2a4"
+      },
+      "type": "Microsoft.Sql/servers/administrators"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/Default')]",
+      "properties": {
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/advancedThreatProtectionSettings"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/CreateIndex')]",
+      "properties": {
+        "autoExecuteValue": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/advisors"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/DbParameterization')]",
+      "properties": {
+        "autoExecuteValue": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/advisors"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/DefragmentIndex')]",
+      "properties": {
+        "autoExecuteValue": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/advisors"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/DropIndex')]",
+      "properties": {
+        "autoExecuteValue": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/advisors"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/ForceLastGoodPlan')]",
+      "properties": {
+        "autoExecuteValue": "Enabled"
+      },
+      "type": "Microsoft.Sql/servers/advisors"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "location": "West US",
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/Default')]",
+      "properties": {
+        "auditingState": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/auditingPolicies"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/Default')]",
+      "properties": {
+        "auditActionsAndGroups": [],
+        "isAzureMonitorTargetEnabled": false,
+        "isManagedIdentityInUse": false,
+        "isStorageSecondaryKeyInUse": false,
+        "retentionDays": 0,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Sql/servers/auditingSettings"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/Default')]",
+      "properties": {
+        "azureADOnlyAuthentication": false
+      },
+      "type": "Microsoft.Sql/servers/azureADOnlyAuthentications"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "location": "westus",
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/default')]",
+      "properties": {
+        "connectionType": "Default"
+      },
+      "type": "Microsoft.Sql/servers/connectionPolicies"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/master/Default')]",
+      "properties": {
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/advancedThreatProtectionSettings"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "location": "West US",
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/master/Default')]",
+      "properties": {
+        "auditingState": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/auditingPolicies"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/master/Default')]",
+      "properties": {
+        "isAzureMonitorTargetEnabled": false,
+        "retentionDays": 0,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Sql/servers/databases/auditingSettings"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/master/Default')]",
+      "properties": {
+        "isAzureMonitorTargetEnabled": false,
+        "retentionDays": 0,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Sql/servers/databases/extendedAuditingSettings"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/master/Default')]",
+      "properties": {
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/geoBackupPolicies"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/master/Current')]",
+      "properties": {},
+      "type": "Microsoft.Sql/servers/databases/ledgerDigestUploads"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/master/Default')]",
+      "properties": {
+        "disabledAlerts": [
+          ""
+        ],
+        "emailAccountAdmins": false,
+        "emailAddresses": [
+          ""
+        ],
+        "retentionDays": 0,
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/securityAlertPolicies"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/master/Current')]",
+      "properties": {
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/transparentDataEncryption"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/master/Default')]",
+      "properties": {
+        "recurringScans": {
+          "emailSubscriptionAdmins": true,
+          "isEnabled": false
+        }
+      },
+      "type": "Microsoft.Sql/servers/databases/vulnerabilityAssessments"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/Default')]",
+      "properties": {
+        "isAzureMonitorTargetEnabled": false,
+        "isManagedIdentityInUse": false,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Sql/servers/devOpsAuditingSettings"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "kind": "servicemanaged",
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/current')]",
+      "properties": {
+        "autoRotationEnabled": false,
+        "serverKeyName": "ServiceManaged",
+        "serverKeyType": "ServiceManaged"
+      },
+      "type": "Microsoft.Sql/servers/encryptionProtector"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/Default')]",
+      "properties": {
+        "auditActionsAndGroups": [],
+        "isAzureMonitorTargetEnabled": false,
+        "isManagedIdentityInUse": false,
+        "isStorageSecondaryKeyInUse": false,
+        "retentionDays": 0,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Sql/servers/extendedAuditingSettings"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/allowAll')]",
+      "properties": {
+        "endIpAddress": "255.255.255.255",
+        "startIpAddress": "0.0.0.0"
+      },
+      "type": "Microsoft.Sql/servers/firewallRules"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "kind": "servicemanaged",
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/ServiceManaged')]",
+      "properties": {
+        "serverKeyType": "ServiceManaged"
+      },
+      "type": "Microsoft.Sql/servers/keys"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/Default')]",
+      "properties": {
+        "disabledAlerts": [
+          ""
+        ],
+        "emailAccountAdmins": false,
+        "emailAddresses": [
+          ""
+        ],
+        "retentionDays": 0,
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/securityAlertPolicies"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/Default')]",
+      "properties": {
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/sqlVulnerabilityAssessments"
+    },
+    {
+      "apiVersion": "2023-08-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('servers_tokyo_olympics_sa1_name'), '/Default')]",
+      "properties": {
+        "recurringScans": {
+          "emailSubscriptionAdmins": true,
+          "isEnabled": false
+        },
+        "storageContainerPath": "[parameters('vulnerabilityAssessments_Default_storageContainerPath')]"
+      },
+      "type": "Microsoft.Sql/servers/vulnerabilityAssessments"
+    }
+  ],
+  "variables": {}
+}

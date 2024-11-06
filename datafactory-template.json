@@ -1,0 +1,352 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccounts_olympicdatadeproject_name": {
+      "type": "String"
+    },
+    "vulnerabilityAssessments_Default_storageContainerPath": {
+      "type": "SecureString"
+    },
+    "workspaces_tokyo_olympics_db1_name": {
+      "type": "String"
+    },
+    "workspaces_tokyo_olympics_sa1_name": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2024-05-01",
+      "location": "westus",
+      "name": "[parameters('workspaces_tokyo_olympics_db1_name')]",
+      "properties": {
+        "authorizations": [
+          {
+            "principalId": "9a74af6f-d153-4348-988a-e2672920bee9",
+            "roleDefinitionId": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635"
+          }
+        ],
+        "createdBy": {},
+        "defaultCatalog": {
+          "initialType": "UnityCatalog"
+        },
+        "managedResourceGroupId": "[concat('/subscriptions/2d1160ae-3636-400c-abd3-11f9ce51ff03/resourceGroups/databricks-rg-', parameters('workspaces_tokyo_olympics_db1_name'), '-4vkrx7lanelcc')]",
+        "parameters": {
+          "enableNoPublicIp": {
+            "value": false
+          },
+          "prepareEncryption": {
+            "value": false
+          },
+          "publicIpName": {
+            "value": "nat-gw-public-ip"
+          },
+          "requireInfrastructureEncryption": {
+            "value": false
+          },
+          "storageAccountName": {
+            "value": "dbstorage7r4ywmyufcgfs"
+          },
+          "storageAccountSkuName": {
+            "value": "Standard_GRS"
+          },
+          "vnetAddressPrefix": {
+            "value": "10.139"
+          }
+        },
+        "updatedBy": {}
+      },
+      "sku": {
+        "name": "premium"
+      },
+      "type": "Microsoft.Databricks/workspaces"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "kind": "StorageV2",
+      "location": "westus2",
+      "name": "[parameters('storageAccounts_olympicdatadeproject_name')]",
+      "properties": {
+        "accessTier": "Hot",
+        "allowBlobPublicAccess": false,
+        "allowCrossTenantReplication": false,
+        "allowSharedKeyAccess": true,
+        "defaultToOAuthAuthentication": false,
+        "dnsEndpointType": "Standard",
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "requireInfrastructureEncryption": false,
+          "services": {
+            "blob": {
+              "enabled": true,
+              "keyType": "Account"
+            },
+            "file": {
+              "enabled": true,
+              "keyType": "Account"
+            }
+          }
+        },
+        "isHnsEnabled": true,
+        "isSftpEnabled": false,
+        "largeFileSharesState": "Enabled",
+        "minimumTlsVersion": "TLS1_2",
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "defaultAction": "Allow",
+          "ipRules": [],
+          "virtualNetworkRules": []
+        },
+        "publicNetworkAccess": "Enabled",
+        "supportsHttpsTrafficOnly": true
+      },
+      "sku": {
+        "name": "Standard_RAGRS",
+        "tier": "Standard"
+      },
+      "type": "Microsoft.Storage/storageAccounts"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_olympicdatadeproject_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_olympicdatadeproject_name'), '/default')]",
+      "properties": {
+        "containerDeleteRetentionPolicy": {
+          "days": 7,
+          "enabled": true
+        },
+        "cors": {
+          "corsRules": []
+        },
+        "deleteRetentionPolicy": {
+          "allowPermanentDelete": false,
+          "days": 7,
+          "enabled": true
+        }
+      },
+      "sku": {
+        "name": "Standard_RAGRS",
+        "tier": "Standard"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_olympicdatadeproject_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_olympicdatadeproject_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        },
+        "protocolSettings": {
+          "smb": {}
+        },
+        "shareDeleteRetentionPolicy": {
+          "days": 7,
+          "enabled": true
+        }
+      },
+      "sku": {
+        "name": "Standard_RAGRS",
+        "tier": "Standard"
+      },
+      "type": "Microsoft.Storage/storageAccounts/fileServices"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_olympicdatadeproject_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_olympicdatadeproject_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        }
+      },
+      "type": "Microsoft.Storage/storageAccounts/queueServices"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_olympicdatadeproject_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_olympicdatadeproject_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        }
+      },
+      "type": "Microsoft.Storage/storageAccounts/tableServices"
+    },
+    {
+      "apiVersion": "2021-06-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_olympicdatadeproject_name'))]"
+      ],
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "location": "westus",
+      "name": "[parameters('workspaces_tokyo_olympics_sa1_name')]",
+      "properties": {
+        "azureADOnlyAuthentication": false,
+        "cspWorkspaceAdminProperties": {
+          "initialWorkspaceAdminObjectId": "f4756aa1-1dc7-4216-9ddb-ef9e9cbdad35"
+        },
+        "defaultDataLakeStorage": {
+          "accountUrl": "https://olympicdatadeproject.dfs.core.windows.net",
+          "createManagedPrivateEndpoint": false,
+          "filesystem": "olympic-data-container",
+          "resourceId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_olympicdatadeproject_name'))]"
+        },
+        "encryption": {},
+        "managedResourceGroupName": "synapseworkspace-managedrg-4c4ceaae-29e9-41c2-8be7-e1d0988704ce",
+        "privateEndpointConnections": [],
+        "publicNetworkAccess": "Enabled",
+        "sqlAdministratorLogin": "sqladminuser",
+        "trustedServiceBypassEnabled": false
+      },
+      "type": "Microsoft.Synapse/workspaces"
+    },
+    {
+      "apiVersion": "2021-06-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('workspaces_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('workspaces_tokyo_olympics_sa1_name'), '/Default')]",
+      "properties": {
+        "auditActionsAndGroups": [],
+        "isAzureMonitorTargetEnabled": false,
+        "isStorageSecondaryKeyInUse": false,
+        "retentionDays": 0,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Synapse/workspaces/auditingSettings"
+    },
+    {
+      "apiVersion": "2021-06-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('workspaces_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('workspaces_tokyo_olympics_sa1_name'), '/default')]",
+      "properties": {
+        "azureADOnlyAuthentication": false
+      },
+      "type": "Microsoft.Synapse/workspaces/azureADOnlyAuthentications"
+    },
+    {
+      "apiVersion": "2021-06-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('workspaces_tokyo_olympics_sa1_name'))]"
+      ],
+      "location": "westus",
+      "name": "[concat(parameters('workspaces_tokyo_olympics_sa1_name'), '/default')]",
+      "properties": {
+        "minimalTlsVersion": "1.2"
+      },
+      "type": "Microsoft.Synapse/workspaces/dedicatedSQLminimalTlsSettings"
+    },
+    {
+      "apiVersion": "2021-06-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('workspaces_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('workspaces_tokyo_olympics_sa1_name'), '/Default')]",
+      "properties": {
+        "auditActionsAndGroups": [],
+        "isAzureMonitorTargetEnabled": false,
+        "isStorageSecondaryKeyInUse": false,
+        "retentionDays": 0,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Synapse/workspaces/extendedAuditingSettings"
+    },
+    {
+      "apiVersion": "2021-06-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('workspaces_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('workspaces_tokyo_olympics_sa1_name'), '/allowAll')]",
+      "properties": {
+        "endIpAddress": "255.255.255.255",
+        "startIpAddress": "0.0.0.0"
+      },
+      "type": "Microsoft.Synapse/workspaces/firewallRules"
+    },
+    {
+      "apiVersion": "2021-06-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('workspaces_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('workspaces_tokyo_olympics_sa1_name'), '/AutoResolveIntegrationRuntime')]",
+      "properties": {
+        "type": "Managed",
+        "typeProperties": {
+          "computeProperties": {
+            "location": "AutoResolve"
+          }
+        }
+      },
+      "type": "Microsoft.Synapse/workspaces/integrationruntimes"
+    },
+    {
+      "apiVersion": "2021-06-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('workspaces_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('workspaces_tokyo_olympics_sa1_name'), '/Default')]",
+      "properties": {
+        "disabledAlerts": [
+          ""
+        ],
+        "emailAccountAdmins": false,
+        "emailAddresses": [
+          ""
+        ],
+        "retentionDays": 0,
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Synapse/workspaces/securityAlertPolicies"
+    },
+    {
+      "apiVersion": "2021-06-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('workspaces_tokyo_olympics_sa1_name'))]"
+      ],
+      "name": "[concat(parameters('workspaces_tokyo_olympics_sa1_name'), '/Default')]",
+      "properties": {
+        "recurringScans": {
+          "emailSubscriptionAdmins": true,
+          "isEnabled": false
+        },
+        "storageContainerPath": "[parameters('vulnerabilityAssessments_Default_storageContainerPath')]"
+      },
+      "type": "Microsoft.Synapse/workspaces/vulnerabilityAssessments"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_olympicdatadeproject_name'), 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_olympicdatadeproject_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_olympicdatadeproject_name'), '/default/olympic-data-container')]",
+      "properties": {
+        "defaultEncryptionScope": "$account-encryption-key",
+        "denyEncryptionScopeOverride": false,
+        "immutableStorageWithVersioning": {
+          "enabled": false
+        },
+        "publicAccess": "None"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers"
+    }
+  ],
+  "variables": {}
+}

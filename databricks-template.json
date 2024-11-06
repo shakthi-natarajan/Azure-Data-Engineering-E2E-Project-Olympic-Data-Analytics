@@ -1,0 +1,498 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "accessConnectors_unity_catalog_access_connector_name": {
+      "type": "String"
+    },
+    "networkSecurityGroups_workers_sg_name": {
+      "type": "String"
+    },
+    "storageAccounts_dbstorage7r4ywmyufcgfs_name": {
+      "type": "String"
+    },
+    "userAssignedIdentities_dbmanagedidentity_name": {
+      "type": "String"
+    },
+    "virtualNetworks_workers_vnet_name": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2024-05-01",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "location": "westus",
+      "name": "[parameters('accessConnectors_unity_catalog_access_connector_name')]",
+      "properties": {},
+      "tags": {
+        "application": "databricks",
+        "databricks-environment": "true"
+      },
+      "type": "Microsoft.Databricks/accessConnectors"
+    },
+    {
+      "apiVersion": "2023-07-31-preview",
+      "location": "westus",
+      "name": "[parameters('userAssignedIdentities_dbmanagedidentity_name')]",
+      "tags": {
+        "application": "databricks",
+        "databricks-environment": "true"
+      },
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities"
+    },
+    {
+      "apiVersion": "2024-01-01",
+      "location": "westus",
+      "name": "[parameters('networkSecurityGroups_workers_sg_name')]",
+      "properties": {
+        "securityRules": [
+          {
+            "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('networkSecurityGroups_workers_sg_name'), 'databricks-worker-to-worker')]",
+            "name": "databricks-worker-to-worker",
+            "properties": {
+              "access": "Allow",
+              "description": "Required for worker nodes communication within a cluster.",
+              "destinationAddressPrefix": "*",
+              "destinationAddressPrefixes": [],
+              "destinationPortRange": "*",
+              "destinationPortRanges": [],
+              "direction": "Inbound",
+              "priority": 200,
+              "protocol": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "sourceAddressPrefixes": [],
+              "sourcePortRange": "*",
+              "sourcePortRanges": []
+            },
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+          },
+          {
+            "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('networkSecurityGroups_workers_sg_name'), 'databricks-control-plane-ssh')]",
+            "name": "databricks-control-plane-ssh",
+            "properties": {
+              "access": "Allow",
+              "description": "Required for Databricks control plane management of worker nodes.",
+              "destinationAddressPrefix": "*",
+              "destinationAddressPrefixes": [],
+              "destinationPortRange": "22",
+              "destinationPortRanges": [],
+              "direction": "Inbound",
+              "priority": 100,
+              "protocol": "*",
+              "sourceAddressPrefixes": [
+                "40.83.178.242/32"
+              ],
+              "sourcePortRange": "*",
+              "sourcePortRanges": []
+            },
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+          },
+          {
+            "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('networkSecurityGroups_workers_sg_name'), 'databricks-control-plane-worker-proxy')]",
+            "name": "databricks-control-plane-worker-proxy",
+            "properties": {
+              "access": "Allow",
+              "description": "Required for Databricks control plane communication with worker nodes.",
+              "destinationAddressPrefix": "*",
+              "destinationAddressPrefixes": [],
+              "destinationPortRange": "5557",
+              "destinationPortRanges": [],
+              "direction": "Inbound",
+              "priority": 110,
+              "protocol": "*",
+              "sourceAddressPrefixes": [
+                "40.83.178.242/32"
+              ],
+              "sourcePortRange": "*",
+              "sourcePortRanges": []
+            },
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+          }
+        ]
+      },
+      "tags": {
+        "application": "databricks",
+        "databricks-environment": "true"
+      },
+      "type": "Microsoft.Network/networkSecurityGroups"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "kind": "StorageV2",
+      "location": "westus",
+      "name": "[parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name')]",
+      "properties": {
+        "accessTier": "Hot",
+        "allowBlobPublicAccess": false,
+        "allowCrossTenantReplication": false,
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "services": {
+            "blob": {
+              "enabled": true,
+              "keyType": "Account"
+            },
+            "file": {
+              "enabled": true,
+              "keyType": "Account"
+            }
+          }
+        },
+        "isHnsEnabled": true,
+        "minimumTlsVersion": "TLS1_2",
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "defaultAction": "Allow",
+          "ipRules": [],
+          "virtualNetworkRules": []
+        },
+        "supportsHttpsTrafficOnly": true
+      },
+      "sku": {
+        "name": "Standard_GRS",
+        "tier": "Standard"
+      },
+      "tags": {
+        "application": "databricks",
+        "databricks-environment": "true"
+      },
+      "type": "Microsoft.Storage/storageAccounts"
+    },
+    {
+      "apiVersion": "2024-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_workers_sg_name'))]"
+      ],
+      "name": "[concat(parameters('networkSecurityGroups_workers_sg_name'), '/databricks-control-plane-ssh')]",
+      "properties": {
+        "access": "Allow",
+        "description": "Required for Databricks control plane management of worker nodes.",
+        "destinationAddressPrefix": "*",
+        "destinationAddressPrefixes": [],
+        "destinationPortRange": "22",
+        "destinationPortRanges": [],
+        "direction": "Inbound",
+        "priority": 100,
+        "protocol": "*",
+        "sourceAddressPrefixes": [
+          "40.83.178.242/32"
+        ],
+        "sourcePortRange": "*",
+        "sourcePortRanges": []
+      },
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+    },
+    {
+      "apiVersion": "2024-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_workers_sg_name'))]"
+      ],
+      "name": "[concat(parameters('networkSecurityGroups_workers_sg_name'), '/databricks-control-plane-worker-proxy')]",
+      "properties": {
+        "access": "Allow",
+        "description": "Required for Databricks control plane communication with worker nodes.",
+        "destinationAddressPrefix": "*",
+        "destinationAddressPrefixes": [],
+        "destinationPortRange": "5557",
+        "destinationPortRanges": [],
+        "direction": "Inbound",
+        "priority": 110,
+        "protocol": "*",
+        "sourceAddressPrefixes": [
+          "40.83.178.242/32"
+        ],
+        "sourcePortRange": "*",
+        "sourcePortRanges": []
+      },
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+    },
+    {
+      "apiVersion": "2024-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_workers_sg_name'))]"
+      ],
+      "name": "[concat(parameters('networkSecurityGroups_workers_sg_name'), '/databricks-worker-to-worker')]",
+      "properties": {
+        "access": "Allow",
+        "description": "Required for worker nodes communication within a cluster.",
+        "destinationAddressPrefix": "*",
+        "destinationAddressPrefixes": [],
+        "destinationPortRange": "*",
+        "destinationPortRanges": [],
+        "direction": "Inbound",
+        "priority": 200,
+        "protocol": "*",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "sourceAddressPrefixes": [],
+        "sourcePortRange": "*",
+        "sourcePortRanges": []
+      },
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+    },
+    {
+      "apiVersion": "2024-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_workers_sg_name'))]"
+      ],
+      "location": "westus",
+      "name": "[parameters('virtualNetworks_workers_vnet_name')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.139.0.0/16"
+          ]
+        },
+        "enableDdosProtection": false,
+        "subnets": [
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_workers_vnet_name'), 'public-subnet')]",
+            "name": "public-subnet",
+            "properties": {
+              "addressPrefix": "10.139.0.0/18",
+              "delegations": [],
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_workers_sg_name'))]"
+              },
+              "privateEndpointNetworkPolicies": "Disabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            },
+            "type": "Microsoft.Network/virtualNetworks/subnets"
+          },
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_workers_vnet_name'), 'private-subnet')]",
+            "name": "private-subnet",
+            "properties": {
+              "addressPrefix": "10.139.64.0/18",
+              "delegations": [],
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_workers_sg_name'))]"
+              },
+              "privateEndpointNetworkPolicies": "Disabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            },
+            "type": "Microsoft.Network/virtualNetworks/subnets"
+          }
+        ],
+        "virtualNetworkPeerings": []
+      },
+      "tags": {
+        "application": "databricks",
+        "databricks-environment": "true"
+      },
+      "type": "Microsoft.Network/virtualNetworks"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        },
+        "deleteRetentionPolicy": {
+          "allowPermanentDelete": false,
+          "enabled": false
+        }
+      },
+      "sku": {
+        "name": "Standard_GRS",
+        "tier": "Standard"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        },
+        "protocolSettings": {
+          "smb": {}
+        },
+        "shareDeleteRetentionPolicy": {
+          "days": 7,
+          "enabled": true
+        }
+      },
+      "sku": {
+        "name": "Standard_GRS",
+        "tier": "Standard"
+      },
+      "type": "Microsoft.Storage/storageAccounts/fileServices"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        }
+      },
+      "type": "Microsoft.Storage/storageAccounts/queueServices"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        }
+      },
+      "type": "Microsoft.Storage/storageAccounts/tableServices"
+    },
+    {
+      "apiVersion": "2024-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_workers_vnet_name'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_workers_sg_name'))]"
+      ],
+      "name": "[concat(parameters('virtualNetworks_workers_vnet_name'), '/private-subnet')]",
+      "properties": {
+        "addressPrefix": "10.139.64.0/18",
+        "delegations": [],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_workers_sg_name'))]"
+        },
+        "privateEndpointNetworkPolicies": "Disabled",
+        "privateLinkServiceNetworkPolicies": "Enabled"
+      },
+      "type": "Microsoft.Network/virtualNetworks/subnets"
+    },
+    {
+      "apiVersion": "2024-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_workers_vnet_name'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_workers_sg_name'))]"
+      ],
+      "name": "[concat(parameters('virtualNetworks_workers_vnet_name'), '/public-subnet')]",
+      "properties": {
+        "addressPrefix": "10.139.0.0/18",
+        "delegations": [],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_workers_sg_name'))]"
+        },
+        "privateEndpointNetworkPolicies": "Disabled",
+        "privateLinkServiceNetworkPolicies": "Enabled"
+      },
+      "type": "Microsoft.Network/virtualNetworks/subnets"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), '/default/ephemeral')]",
+      "properties": {
+        "defaultEncryptionScope": "$account-encryption-key",
+        "denyEncryptionScopeOverride": false,
+        "immutableStorageWithVersioning": {
+          "enabled": false
+        },
+        "publicAccess": "None"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), '/default/jobs')]",
+      "properties": {
+        "defaultEncryptionScope": "$account-encryption-key",
+        "denyEncryptionScopeOverride": false,
+        "immutableStorageWithVersioning": {
+          "enabled": false
+        },
+        "publicAccess": "None"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), '/default/logs')]",
+      "properties": {
+        "defaultEncryptionScope": "$account-encryption-key",
+        "denyEncryptionScopeOverride": false,
+        "immutableStorageWithVersioning": {
+          "enabled": false
+        },
+        "publicAccess": "None"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), '/default/meta')]",
+      "properties": {
+        "defaultEncryptionScope": "$account-encryption-key",
+        "denyEncryptionScopeOverride": false,
+        "immutableStorageWithVersioning": {
+          "enabled": false
+        },
+        "publicAccess": "None"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), '/default/root')]",
+      "properties": {
+        "defaultEncryptionScope": "$account-encryption-key",
+        "denyEncryptionScopeOverride": false,
+        "immutableStorageWithVersioning": {
+          "enabled": false
+        },
+        "publicAccess": "None"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers"
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_dbstorage7r4ywmyufcgfs_name'), '/default/unity-catalog-storage')]",
+      "properties": {
+        "defaultEncryptionScope": "$account-encryption-key",
+        "denyEncryptionScopeOverride": false,
+        "immutableStorageWithVersioning": {
+          "enabled": false
+        },
+        "publicAccess": "None"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers"
+    }
+  ],
+  "variables": {}
+}
